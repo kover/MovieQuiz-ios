@@ -54,7 +54,7 @@
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                <integer key="value" value="6"/>
+                                                <integer key="value" value="20"/>
                                             </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                     </imageView>
@@ -122,6 +122,8 @@
                         <outlet property="counterLabel" destination="n0R-8X-ufx" id="TDw-Z5-hwD"/>
                         <outlet property="imageView" destination="yYb-OV-7eu" id="ObW-w4-27F"/>
                         <outlet property="textLabel" destination="xnf-zy-1XU" id="yXb-91-I8s"/>
+                        <outletCollection property="buttons" destination="lrW-x0-4cw" collectionClass="NSMutableArray" id="yIA-UQ-cYy"/>
+                        <outletCollection property="buttons" destination="lgI-Jl-O2F" collectionClass="NSMutableArray" id="vMi-Je-o4g"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

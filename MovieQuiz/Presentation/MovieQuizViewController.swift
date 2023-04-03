@@ -52,6 +52,8 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet weak private var textLabel: UILabel!
     @IBOutlet weak private var counterLabel: UILabel!
     
+    @IBOutlet private var buttons: [UIButton]!
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,13 +62,13 @@ final class MovieQuizViewController: UIViewController {
     }
     
     // MARK: - Actions
-    @IBAction func yesButtonClicked(_ sender: UIButton) {
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
         let currentQuestion = questions[currentQuestionIndex]
         
         showAnswerResult(isCorrect: currentQuestion.correctAnswer)
     }
     
-    @IBAction func noButtonClicked(_ sender: UIButton) {
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
         let currentQuestion = questions[currentQuestionIndex]
         
         showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
@@ -90,6 +92,10 @@ final class MovieQuizViewController: UIViewController {
     private func showAnswerResult(isCorrect: Bool) {
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+        // Disable all buttons in the collection on click
+        buttons.forEach { button in
+            button.isEnabled = false
+        }
         
         if (isCorrect) {
             correctAnswers += 1
@@ -97,6 +103,10 @@ final class MovieQuizViewController: UIViewController {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
             self.showNextQuestionOrResults()
+            // Enable buttons after new question is showed
+            self.buttons.forEach { button in
+                button.isEnabled = true
+            }
         })
     }
     
