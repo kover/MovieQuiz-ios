@@ -6,6 +6,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
+    private var alertPresenter: AlertPresenterProtocol?
+    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
@@ -21,6 +23,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         super.viewDidLoad()
         
         questionFactory = QuestionFactory(delegate: self)
+        
+        alertPresenter = AlertPresenter(delegate: self)
         
         questionFactory?.requestNextQuestion()
         imageView.layer.borderColor = UIColor.ypWhite.cgColor
@@ -110,24 +114,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(title: result.title,
-                                      message: result.text,
-                                      preferredStyle: .alert)
-
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            guard let self = self else {
-                return
+        let alertModel = AlertModel(title: result.title,
+                                    message: result.text,
+                                    buttonText: result.buttonText) {
+            // Not sure if this needs to be wrapped with DispatchQueue.main
+            DispatchQueue.main.async { [weak self] in
+                self?.imageView.layer.borderWidth = 0
+                self?.imageView.layer.borderColor = nil
+                self?.currentQuestionIndex = 0
+                self?.correctAnswers = 0
+                self?.questionFactory?.requestNextQuestion()
             }
-            self.imageView.layer.borderWidth = 0
-            self.imageView.layer.borderColor = nil
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            self.questionFactory?.requestNextQuestion()
         }
         
-        alert.addAction(action)
-
-        self.present(alert, animated: true, completion: nil)
+        alertPresenter?.showAlert(model: alertModel)
     }
 }
 
