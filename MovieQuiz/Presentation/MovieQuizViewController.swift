@@ -11,6 +11,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
+    private var statisticService: StatisticService?
+    
     
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var textLabel: UILabel!
@@ -21,6 +23,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        statisticService = StatisticServiceImpementation()
         
         questionFactory = QuestionFactory(delegate: self)
         
@@ -114,8 +118,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
+        
+        var message = result.text
+        
+        if let statisticService = statisticService {
+            statisticService.store(correct: correctAnswers, total: questionsAmount)
+            
+            message += "\nКоличество сыграных квизов: \(statisticService.gamesCount)\nРекорд: \(String(describing: statisticService.bestGame))\nСредняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        }
+
         let alertModel = AlertModel(title: result.title,
-                                    message: result.text,
+                                    message: message,
                                     buttonText: result.buttonText) {
             // Not sure if this needs to be wrapped with DispatchQueue.main
             DispatchQueue.main.async { [weak self] in
@@ -130,4 +143,3 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         alertPresenter?.showAlert(model: alertModel)
     }
 }
-
