@@ -20,17 +20,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     @IBOutlet private var buttons: [UIButton]!
     
+    @IBOutlet weak private var activityIndicator: UIActivityIndicatorView!
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
 
         statisticService = StatisticServiceImpementation()
         
-        questionFactory = QuestionFactory(delegate: self)
-        
         alertPresenter = AlertPresenter(delegate: self)
         
-        questionFactory?.requestNextQuestion()
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        showLoadingIndicator()
+        questionFactory?.loadData()
+        
         imageView.layer.borderColor = UIColor.ypWhite.cgColor
     }
     
@@ -46,6 +49,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
+    }
+    
+    func didLoadDataFromServer() {
+        hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
     }
     
     // MARK: - Actions
@@ -68,7 +80,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Business logic
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
         )
@@ -141,5 +153,36 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
         
         alertPresenter?.showAlert(model: alertModel)
+    }
+    
+    // MARK: - Network interaction
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        
+        let alert = AlertModel(title: "Ошибка",
+                               message: message,
+                               buttonText: "Попробовать ещъ раз") { [weak self] in
+            guard let self = self else {
+                return
+            }
+            
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            
+            self.questionFactory?.requestNextQuestion()
+        }
+        
+        alertPresenter?.showAlert(model: alert)
     }
 }
