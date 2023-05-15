@@ -3,7 +3,6 @@ import UIKit
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
     
     private var alertPresenter: AlertPresenterProtocol?
     
@@ -42,15 +41,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        
-        currentQuestion = question
-        let viewModel = presenter.convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: viewModel)
-        }
+        presenter.didReceiveNextQuestion(question: question)
     }
     
     func didLoadDataFromServer() {
@@ -64,18 +55,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Actions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        presenter.currentQuestion = currentQuestion
         presenter.yesButtonClicked()
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.currentQuestion = currentQuestion
         presenter.noButtonClicked()
     }
     
     // MARK: - Business logic
     
-    private func show(quiz step: QuizStepViewModel) {
+    func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
@@ -97,28 +86,19 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self = self else {
                 return
             }
-            self.showNextQuestionOrResults()
+            self.presenter.correctAnswers = self.correctAnswers
+            self.presenter.questionFactory = self.questionFactory
+            self.presenter.showNextQuestionOrResults()
+            self.imageView.layer.borderWidth = 0
+            self.imageView.layer.borderColor = nil
             // Enable buttons after new question is showed
             self.buttons.forEach { button in
                 button.isEnabled = true
             }
         }
     }
-    
-    private func showNextQuestionOrResults() {
-        if presenter.isLastQuestion() {
-            show(quiz: QuizResultsViewModel(title: "Этот раунд окончен!",
-                                            text: "Ваш результат: \(correctAnswers)/\(presenter.questionsAmount)",
-                                            buttonText: "Сыграть ещё раз"))
-        } else {
-            presenter.switchToNextQuestion()
-            imageView.layer.borderWidth = 0
-            imageView.layer.borderColor = nil
-            questionFactory?.requestNextQuestion()
-        }
-    }
-    
-    private func show(quiz result: QuizResultsViewModel) {
+
+    func show(quiz result: QuizResultsViewModel) {
         
         var message = result.text
         
