@@ -8,7 +8,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     @IBOutlet private var buttons: [UIButton]!
     @IBOutlet weak private var activityIndicator: UIActivityIndicatorView!
     
-    private var alertPresenter: AlertPresenterProtocol?
+    private var alertPresenter: AlertPresenterProtocol!
     
     private var presenter: MovieQuizPresenter!
     

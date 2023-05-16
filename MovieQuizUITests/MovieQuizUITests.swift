@@ -65,10 +65,7 @@ final class MovieQuizUITests: XCTestCase {
     }
     
     func testFinish() {
-        for _ in 1...10 {
-            sleep(2)
-            app.buttons["Yes"].tap()
-        }
+        passQuizToTheEnd(with: "Yes")
         
         let alert = app.alerts["QuizAlert"]
         
@@ -83,10 +80,7 @@ final class MovieQuizUITests: XCTestCase {
     }
     
     func testGameRestart() {
-        for _ in 1...10 {
-            sleep(2)
-            app.buttons["No"].tap()
-        }
+        passQuizToTheEnd(with: "No")
         
         let alert = app.alerts["QuizAlert"]
         alert.buttons.firstMatch.tap()
@@ -97,5 +91,12 @@ final class MovieQuizUITests: XCTestCase {
         
         XCTAssertFalse(alert.exists)
         XCTAssertEqual(indexLabel.label, "1/10")
+    }
+    
+    private func passQuizToTheEnd(with answer: String) {
+        for _ in 1...10 {
+            sleep(2)
+            app.buttons[answer].tap()
+        }
     }
 }
